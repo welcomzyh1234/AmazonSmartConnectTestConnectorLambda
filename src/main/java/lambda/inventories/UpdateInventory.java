@@ -2,36 +2,30 @@ package lambda.inventories;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent;
-import lambda.AmazonYojakaAPI;
+import lambda.AmazonYojakaAPIProxy;
 import lambda.Constant;
 import lambda.Util;
-import lombok.AllArgsConstructor;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static lambda.Constant.AU_YAPS_API_INVENTORIES_RESOURCE_PATH;
-import static lambda.Constant.LWA_ACCESS_TOKEN_HEADER_KEY_NAME;
+import static lambda.Constant.YAPS_API_INVENTORIES_RESOURCE_PATH;
 
-@AllArgsConstructor
-public class UpdateInventory implements AmazonYojakaAPI {
+public class UpdateInventory extends AmazonYojakaAPIProxy {
 
-    private final HttpClient httpClient;
-    private final APIGatewayV2ProxyRequestEvent event;
-    private final Context context;
+    public UpdateInventory(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
+        super(httpClient, event, context);
+    }
 
-    @Override
-    public HttpResponse invokeAPI() throws IOException, URISyntaxException {
+    protected HttpUriRequest getHttpRequest() throws URISyntaxException {
         Map<String, String> requestPayload = Constant.GSON.fromJson(event.getBody(), Map.class);
-        HttpUriRequest httpRequest = new HttpPut(
+        return new HttpPut(
                 Util.getBaseUriBuilder()
-                        .setPath(AU_YAPS_API_INVENTORIES_RESOURCE_PATH)
+                        .setPath(YAPS_API_INVENTORIES_RESOURCE_PATH)
                         .setCustomQuery(
                                 String.format(
                                         "locationId=%s&skuId=%s&quantity=%s&inventoryUpdateSequence=%s",
@@ -43,9 +37,5 @@ public class UpdateInventory implements AmazonYojakaAPI {
                         )
                         .build()
         );
-        Util.addBasicHeadersToHttpRequest(httpRequest, event);
-        context.getLogger().log(String.format("[DEBUG] Invoking GetInventory API with: \n HTTP Method: %s \n URI: %s \n",
-                httpRequest.getMethod(), httpRequest.getURI()));
-        return httpClient.execute(httpRequest);
     }
 }

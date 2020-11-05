@@ -21,10 +21,10 @@ public class Util {
     public static URIBuilder getBaseUriBuilder() {
         return new URIBuilder()
                 .setScheme(Constant.HTTPS)
-                .setHost(Constant.AU_YAPS_API_DOMAIN_NAME);
+                .setHost(Constant.YAPS_API_DOMAIN_NAME);
     }
 
-    public static void addBasicHeadersToHttpRequest(HttpUriRequest httpRequest, APIGatewayV2ProxyRequestEvent event) {
+    public static void addLWAAccessTokenToHttpRequest(HttpUriRequest httpRequest, APIGatewayV2ProxyRequestEvent event) {
         // The headers names sent by Jquery AJAX would be automatically updated to lower case, so we need retrieve
         // the value with lower case key name
         String lwaAccessToken = event.getHeaders().get(LWA_ACCESS_TOKEN_HEADER_KEY_NAME.toLowerCase());
@@ -48,7 +48,7 @@ public class Util {
                 )
                 .build();
         STSAssumeRoleSessionCredentialsProvider stsAssumeRoleSessionCredentialsProvider =
-                new STSAssumeRoleSessionCredentialsProvider.Builder(Constant.YOJAKA_TEST_CONNECTOR_IAM_ROLE, Constant.ROLSE_SESSION_NAME)
+                new STSAssumeRoleSessionCredentialsProvider.Builder(Constant.YOJAKA_TEST_CONNECTOR_IAM_ROLE, Constant.ROLE_SESSION_NAME)
                         .withStsClient(awsSecurityTokenService)
                         .withRoleSessionDurationSeconds(Constant.ONE_HOUR)
                         .build();

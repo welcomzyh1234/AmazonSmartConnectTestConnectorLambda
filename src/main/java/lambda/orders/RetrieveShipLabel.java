@@ -1,8 +1,7 @@
-package lambda.inventories;
+package lambda.orders;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent;
-import lambda.AmazonYojakaAPIProxy;
 import lambda.Util;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -10,23 +9,20 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import java.net.URISyntaxException;
 
-import static lambda.Constant.YAPS_API_INVENTORIES_RESOURCE_PATH;
+public class RetrieveShipLabel extends OrderProcessAPIProxy {
 
-public class GetInventory extends AmazonYojakaAPIProxy {
-
-    public GetInventory(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
+    public RetrieveShipLabel(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
         super(httpClient, event, context);
     }
 
     protected HttpUriRequest getHttpRequest() throws URISyntaxException {
         return new HttpGet(
                 Util.getBaseUriBuilder()
-                        .setPath(YAPS_API_INVENTORIES_RESOURCE_PATH)
+                        .setPath(getPathFromGetMethod(event, "ship-label"))
                         .setCustomQuery(
                                 String.format(
-                                        "locationId=%s&skuId=%s",
-                                        event.getQueryStringParameters().get("locationId"),
-                                        event.getQueryStringParameters().get("skuId")
+                                        "packageId=%s",
+                                        event.getQueryStringParameters().get("packageId")
                                 )
                         )
                         .build()

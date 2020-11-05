@@ -1,8 +1,7 @@
-package lambda.inventories;
+package lambda.orders;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent;
-import lambda.AmazonYojakaAPIProxy;
 import lambda.Util;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -10,23 +9,25 @@ import org.apache.http.client.methods.HttpUriRequest;
 
 import java.net.URISyntaxException;
 
-import static lambda.Constant.YAPS_API_INVENTORIES_RESOURCE_PATH;
+public class ListOrders extends OrderListingAPIProxy {
 
-public class GetInventory extends AmazonYojakaAPIProxy {
-
-    public GetInventory(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
+    public ListOrders(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
         super(httpClient, event, context);
     }
 
     protected HttpUriRequest getHttpRequest() throws URISyntaxException {
         return new HttpGet(
                 Util.getBaseUriBuilder()
-                        .setPath(YAPS_API_INVENTORIES_RESOURCE_PATH)
+                        .setPath(getPath(event))
                         .setCustomQuery(
                                 String.format(
-                                        "locationId=%s&skuId=%s",
+                                        "locationId=%s&status=%s&fromTimestamp=%s&toTimestamp=%s&cursor=%s&maxResults=%s",
                                         event.getQueryStringParameters().get("locationId"),
-                                        event.getQueryStringParameters().get("skuId")
+                                        event.getQueryStringParameters().get("status"),
+                                        event.getQueryStringParameters().get("fromTimestamp"),
+                                        event.getQueryStringParameters().get("toTimestamp"),
+                                        event.getQueryStringParameters().get("cursor"),
+                                        event.getQueryStringParameters().get("maxResults")
                                 )
                         )
                         .build()

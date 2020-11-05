@@ -1,8 +1,7 @@
-package lambda.prices;
+package lambda.orders;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent;
-import lambda.AmazonYojakaAPIProxy;
 import lambda.Constant;
 import lambda.Util;
 import org.apache.http.client.HttpClient;
@@ -14,9 +13,9 @@ import org.apache.http.entity.StringEntity;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-public class UpdatePrice extends AmazonYojakaAPIProxy {
+public class UpdatePackages extends OrderProcessAPIProxy {
 
-    public UpdatePrice(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
+    public UpdatePackages(HttpClient httpClient, APIGatewayV2ProxyRequestEvent event, Context context) {
         super(httpClient, event, context);
     }
 
@@ -24,14 +23,7 @@ public class UpdatePrice extends AmazonYojakaAPIProxy {
         Map requestPayload = Constant.GSON.fromJson(event.getBody(), Map.class);
         HttpPut httpRequest = new HttpPut(
                 Util.getBaseUriBuilder()
-                        .setPath(getPath(requestPayload))
-                        .setCustomQuery(
-                                String.format(
-                                        "marketplaceName=%s&channelname=%s",
-                                        requestPayload.get("marketplaceName"),
-                                        requestPayload.get("channelname")
-                                )
-                        )
+                        .setPath(getPathFromPutMethod(requestPayload, "update-packages"))
                         .build()
         );
         httpRequest.setEntity(
@@ -40,9 +32,5 @@ public class UpdatePrice extends AmazonYojakaAPIProxy {
                         ContentType.APPLICATION_JSON)
         );
         return httpRequest;
-    }
-
-    private String getPath(Map<String, String> requestPayload) {
-        return String.format("prod/v1/skus/%s/prices", requestPayload.get("skuId"));
     }
 }
