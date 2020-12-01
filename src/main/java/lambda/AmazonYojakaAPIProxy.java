@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -22,7 +23,11 @@ public abstract class AmazonYojakaAPIProxy{
         Util.addLWAAccessTokenToHttpRequest(httpRequest, event);
         context.getLogger().log(String.format("[DEBUG] Invoking %s API with: \n HTTP Method: %s \n URI: %s \n",
                 getAPIName(), httpRequest.getMethod(), httpRequest.getURI()));
-        return httpClient.execute(httpRequest);
+        HttpResponse response = httpClient.execute(httpRequest);
+        context.getLogger().log(String.format("[DEBUG] Http Response: %s \n", response.toString()));
+        context.getLogger().log(String.format("[DEBUG] Http Response Body: %s \n",
+                EntityUtils.toString(response.getEntity())));
+        return response;
     }
 
     protected abstract HttpUriRequest getHttpRequest() throws URISyntaxException;

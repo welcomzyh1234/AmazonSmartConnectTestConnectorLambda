@@ -27,7 +27,7 @@ public class UpdatePrice extends AmazonYojakaAPIProxy {
                         .setPath(getPath(requestPayload))
                         .setCustomQuery(
                                 String.format(
-                                        "marketplaceName=%s&channelname=%s",
+                                        "marketplaceName=%s&channelName=%s",
                                         requestPayload.get("marketplaceName"),
                                         requestPayload.get("channelname")
                                 )

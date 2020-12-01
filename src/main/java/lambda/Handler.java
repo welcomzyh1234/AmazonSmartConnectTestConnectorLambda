@@ -8,7 +8,9 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyResponseEve
 import com.google.common.collect.ImmutableMap;
 import lambda.prices.UpdatePrice;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -106,10 +108,10 @@ public class Handler implements RequestHandler<APIGatewayV2ProxyRequestEvent, AP
         throw new IllegalStateException("Wrong HTTP Method, only GET, PUT, POST and DELETE are acceptable!");
     }
 
-    private APIGatewayV2ProxyResponseEvent buildApiGatewayProxyResponse(HttpResponse httpResponse) {
+    private APIGatewayV2ProxyResponseEvent buildApiGatewayProxyResponse(HttpResponse httpResponse) throws IOException {
         APIGatewayV2ProxyResponseEvent response = new APIGatewayV2ProxyResponseEvent();
         response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-        response.setBody(httpResponse.toString());
+        response.setBody(EntityUtils.toString(httpResponse.getEntity()));
         response.setHeaders(
                 ImmutableMap.of(
                         "Access-Control-Allow-Origin", "*",
