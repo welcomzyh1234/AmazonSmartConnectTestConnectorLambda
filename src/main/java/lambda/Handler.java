@@ -30,21 +30,17 @@ public class Handler implements RequestHandler<APIGatewayV2ProxyRequestEvent, AP
 
         try {
             if ("/inventories".equals(event.getPath())) {
-                HttpResponse httpResponse = invokeInventoriesAPI(event, context);
-                return buildApiGatewayProxyResponse(httpResponse);
+                return invokeInventoriesAPI(event, context);
             }
             if ("/prices".equals(event.getPath())) {
-                HttpResponse httpResponse = new UpdatePrice(Constant.httpClient, event, context).invokeAPI();
-                return buildApiGatewayProxyResponse(httpResponse);
+                return new UpdatePrice(Constant.httpClient, event, context).invokeAPI();
             }
             if ("/events/subscriptions".equals(event.getPath())) {
-                HttpResponse httpResponse = invokeEventsAPI(event, context);
-                return buildApiGatewayProxyResponse(httpResponse);
+                return invokeEventsAPI(event, context);
             }
             if ("orders".equals(event.getPath().split("/")[1])) {
                 String api = event.getPath().split("/")[2];
-                HttpResponse httpResponse = invokeOrdersAPI(event, context, api);
-                return buildApiGatewayProxyResponse(httpResponse);
+                return invokeOrdersAPI(event, context, api);
             }
             throw new IllegalStateException(
                     "Wrong Invoke URL Path, only inventories, events, prices and orders acceptable!");
@@ -64,7 +60,7 @@ public class Handler implements RequestHandler<APIGatewayV2ProxyRequestEvent, AP
      *
      * @see <a href="https://docs.smartconnect.amazon.com/swagger/inventories.html#api-InventoryManagement-updateInventory">Amazon Yojaka API Inventories Doc</a>
      */
-    private HttpResponse invokeInventoriesAPI(APIGatewayV2ProxyRequestEvent event, Context context) throws Exception {
+    private APIGatewayV2ProxyResponseEvent invokeInventoriesAPI(APIGatewayV2ProxyRequestEvent event, Context context) throws Exception {
         Map<String, AmazonYojakaAPIProxy> inventoriesHttpMethodToProxyMap =
                 GET_INVENTORIES_HTTP_METHOD_TO_PROXY_MAP(event, context);
         String httpMethod = event.getHttpMethod();
@@ -81,7 +77,7 @@ public class Handler implements RequestHandler<APIGatewayV2ProxyRequestEvent, AP
      *
      * @see <a href="https://docs.smartconnect.amazon.com/swagger/orders.html#api-_">Amazon Yojaka API Orders Doc</a>
      */
-    private HttpResponse invokeOrdersAPI(APIGatewayV2ProxyRequestEvent event, Context context, String api) throws Exception {
+    private APIGatewayV2ProxyResponseEvent invokeOrdersAPI(APIGatewayV2ProxyRequestEvent event, Context context, String api) throws Exception {
         Map<String, AmazonYojakaAPIProxy> ordersApiToProxyMap = GET_ORDERS_API_TO_PROXY_MAP(event, context);
 
         if (ordersApiToProxyMap.containsKey(api)) {
@@ -96,7 +92,7 @@ public class Handler implements RequestHandler<APIGatewayV2ProxyRequestEvent, AP
      *
      * @see <a href="https://docs.smartconnect.amazon.com/swagger/events.html#api-_">Amazon Yojaka API Events Doc</a>
      */
-    private HttpResponse invokeEventsAPI(APIGatewayV2ProxyRequestEvent event, Context context) throws Exception {
+    private APIGatewayV2ProxyResponseEvent invokeEventsAPI(APIGatewayV2ProxyRequestEvent event, Context context) throws Exception {
         Map<String, AmazonYojakaAPIProxy> eventsHttpMethodToProxyMap = GET_EVENTS_HTTP_METHOD_TO_PROXY_MAP(event,
                 context);
         String httpMethod = event.getHttpMethod();
@@ -106,18 +102,5 @@ public class Handler implements RequestHandler<APIGatewayV2ProxyRequestEvent, AP
         }
 
         throw new IllegalStateException("Wrong HTTP Method, only GET, PUT, POST and DELETE are acceptable!");
-    }
-
-    private APIGatewayV2ProxyResponseEvent buildApiGatewayProxyResponse(HttpResponse httpResponse) throws IOException {
-        APIGatewayV2ProxyResponseEvent response = new APIGatewayV2ProxyResponseEvent();
-        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-        response.setBody(EntityUtils.toString(httpResponse.getEntity()));
-        response.setHeaders(
-                ImmutableMap.of(
-                        "Access-Control-Allow-Origin", "*",
-                        "Access-Control-Allow-Credentials", "true")
-        );
-        logger.log(String.format("[DEBUG] APIGatewayProxyResponse: %s \n", Constant.GSON.toJson(response)));
-        return response;
     }
 }

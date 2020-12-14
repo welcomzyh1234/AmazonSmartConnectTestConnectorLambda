@@ -32,7 +32,7 @@ public class UpdateInventory extends AmazonYojakaAPIProxy {
                                         requestPayload.get("locationId"),
                                         requestPayload.get("skuId"),
                                         requestPayload.get("quantity"),
-                                        ThreadLocalRandom.current().nextLong(9999999)
+                                        requestPayload.get("inventoryUpdateSequence")
                                 )
                         )
                         .build()
