@@ -33,6 +33,7 @@ public class Constant {
     public static final String SELLER_AWS_ACCOUNT_ACCESS_KEY = System.getenv("SELLER_AWS_ACCOUNT_ACCESS_KEY");
     public static final String SELLER_AWS_ACCOUNT_SECRET_KEY = System.getenv("SELLER_AWS_ACCOUNT_SECRET_KEY");
     public static final String YOJAKA_TEST_CONNECTOR_IAM_ROLE = System.getenv("YOJAKA_TEST_CONNECTOR_IAM_ROLE");
+    public static final String YOJAKA_KMS_KEY = System.getenv("YOJAKA_KMS_KEY");
     public static final String ROLE_SESSION_NAME = "MyConnector";
     public static final String AWS4_SIGNER_SERVICE_NAME = "execute-api";
     public static final String AU_AWS_REGION = "us-west-2";

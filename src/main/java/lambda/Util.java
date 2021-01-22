@@ -4,15 +4,23 @@ import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.STSAssumeRoleSessionCredentialsProvider;
+import com.amazonaws.encryptionsdk.AwsCrypto;
+import com.amazonaws.encryptionsdk.CryptoResult;
+import com.amazonaws.encryptionsdk.kms.KmsMasterKey;
+import com.amazonaws.encryptionsdk.kms.KmsMasterKeyProvider;
 import com.amazonaws.http.AWSRequestSigningApacheInterceptor;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2ProxyRequestEvent;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
+import org.apache.commons.lang3.Validate;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClients;
+
+import java.util.Base64;
+import java.util.Map;
 
 import static lambda.Constant.LWA_ACCESS_TOKEN_HEADER_KEY_NAME;
 
@@ -58,5 +66,40 @@ public class Util {
         return HttpClients.custom()
                 .addInterceptorLast(awsRequestSigningApacheInterceptor)
                 .build();
+    }
+
+    public static String decryptYojakaEncryptedData(String encryptedValue, String encryptionInfoContext) {
+        AwsCrypto awsCrypto = new AwsCrypto();
+        KmsMasterKeyProvider kmsMasterKeyProvider =
+                KmsMasterKeyProvider.builder()
+                        .withCredentials(
+                                new AWSStaticCredentialsProvider(
+                                        new BasicAWSCredentials(
+                                                Constant.SELLER_AWS_ACCOUNT_ACCESS_KEY,
+                                                Constant.SELLER_AWS_ACCOUNT_SECRET_KEY
+                                        )
+                                )
+                        )
+                        .withKeysForEncryption(Constant.YOJAKA_KMS_KEY)
+                        .build();
+
+        CryptoResult<byte[], KmsMasterKey> decryptedDataEnvelope =
+                awsCrypto.decryptData(kmsMasterKeyProvider, Base64.getDecoder().decode(encryptedValue));
+
+        Map<String, String> encryptionContextMap = decryptedDataEnvelope.getEncryptionContext();
+        Validate.isTrue(encryptionContextMap.get("client").equals("yojaka"));
+        Validate.isTrue(encryptionContextMap.get("dataType").equals(encryptionInfoContext));
+
+        return new String(decryptedDataEnvelope.getResult());
+    }
+
+    public static <T> T getNestedValueFromMap(Map map, String... keys) {
+        Object value = map;
+
+        for (String key : keys) {
+            value = ((Map) value).get(key);
+        }
+
+        return (T) value;
     }
 }
